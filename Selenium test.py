@@ -1,12 +1,31 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
-import selenium
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
-url = 'https://genius.com/'
+from bs4 import BeautifulSoup
+
+url = 'https://www.last.fm/search/albums'
+album = 'Blonde'
 
 driver = webdriver.Chrome()
 driver.get(url)
 
-print(driver.find_element(By.NAME, 'q'))
-'''<input name="q" placeholder="Search lyrics &amp; more" autocomplete="off" required="" class="PageHeaderSearch-desktop-sc-4bc00535-2 jZunYq">'''
+'''<input id="site-search" class="search-field" type="text" name="q" placeholder="Search for music…" value="" required="">'''
+search_bar = driver.find_element(By.ID, 'site-search')
+
+search_bar.click()
+search_bar.send_keys(album)
+search_bar.submit()
+
+'''<a href="/music/Frank+Ocean/Blonde" title="Blonde" class="link-block-target">Blonde</a>'''
+#album = driver.find_element(By.CLASS_NAME, 'link-block-target')
+album = WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.LINK_TEXT, album)))
+album.click()
+
+html = driver.page_source
+#driver.save_screenshot('album_page.png')
+#print(driver.current_url)
+
+driver.quit()
