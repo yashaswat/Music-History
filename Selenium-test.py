@@ -6,7 +6,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 
 def webdriver_init():
-    
+        
     options = webdriver.ChromeOptions()
     options.add_argument('--headless=new')
     options.add_argument("--disable-extensions")
@@ -22,17 +22,16 @@ def target_html(driver, url, album):
 
     # <input id="site-search" class="search-field" type="text" name="q" placeholder="Search for music…" value="" required="">
     search_bar = driver.find_element(By.ID, 'site-search')
-
     search_bar.click()
+    
     search_bar.send_keys(album)
     search_bar.submit()
 
     # <a href="/music/Frank+Ocean/Blonde" title="Blonde" class="link-block-target">Blonde</a>
-    album = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.PARTIAL_LINK_TEXT, album)))
+    album = WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.PARTIAL_LINK_TEXT, album)))
     album.click()
 
     WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.CLASS_NAME, 'header-new-title')))
-
     html = driver.page_source
     
     driver.save_screenshot('album_page.png')
@@ -40,7 +39,7 @@ def target_html(driver, url, album):
     
     return html
 
-def fetch_album_metadata(album):
+def fetch_album_info(album):
     
     url = 'https://www.last.fm/search/albums'
     
@@ -74,5 +73,5 @@ def fetch_album_metadata(album):
     except IndexError:
         print('Error')
 
-album = 'In the Aeroplane Over the Sea'
-fetch_album_metadata(album)
+album = str(input('Enter album name to fetch info: '))
+fetch_album_info(album)
