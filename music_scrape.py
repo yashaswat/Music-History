@@ -64,14 +64,14 @@ def fetch_album_info(album):
             release = metadata[1].text
 
             album_info = [artist, runtime.strip(), release.strip(), genre_tags]
-            print(album_info)
+            return album_info
 
         else:
             album_info = [artist, 'NA', 'NA', genre_tags]
-            print(album_info)
+            return album_info
 
     except IndexError:
         print('Error')
 
-album = str(input('Enter album name to fetch info: '))
-fetch_album_info(album)
+# album = str(input('Enter album name to fetch info: '))
+# fetch_album_info(album)

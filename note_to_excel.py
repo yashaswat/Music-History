@@ -4,6 +4,8 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
 
+import music_scrape
+
 def arrow_index(list):
     for i, s in enumerate(list):
         if '<===========' in s:
@@ -71,22 +73,47 @@ def current_progress_marking(data):
 
         for i in range(artist_arrow+1, len(data['music project'])):
             data['spotify logged'][i] = 'No'
-            
 
+            
+def fill_metadata(data, error_log):
+    
+    for i, album in enumerate(data['music project']):
+        
+        info = music_scrape.fetch_album_info(album)
+        
+        data['runtime'] = info[1]
+        data['release date'] = info[2]
+        data['genre tags'] = info[3]
+        
+        try:
+            if data['artist'][i] == '':
+                data['artist'] = info[0]
+            
+            else:
+                continue
+        
+        except IndexError:
+            data['artist'] = 'Error'
+            error_log.append(album)
+            
+                              
 note_path = 'album_list.txt'
 
 data = {
     'music project' : [],
     'artist' : [],
-    #'runtime' : [],
-    #'release date' : [],
-    'spotify logged' : []
-    #'genre tags' : []
+    'runtime' : [],
+    'release date' : [],
+    'spotify logged' : [],
+    'genre tags' : []
 }
+
+error_log = []
 
 music_info_to_dict(data, note_path)
 spotify_logging_status(data)
 current_progress_marking(data)
+fill_metadata(data, error_log)
 
 df = pd.DataFrame(data)
 
@@ -94,4 +121,8 @@ datatoexcel = pd.ExcelWriter('my_music_history.xlsx')
 df.to_excel(datatoexcel)
 datatoexcel.close()
 
-print('Successfully exported to Excel')
+if error_log:
+    print(f'Error in following albums: {error_log}')
+    print('\n Rest exported sucessfully')
+else:
+    print('Successfully exported to Excel')
