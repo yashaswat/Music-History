@@ -5,3 +5,5 @@ for i  in f.readlines()[15:21]:
     list.append(i)
     
     print(list)
+    
+lst = []
