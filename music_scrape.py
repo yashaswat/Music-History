@@ -40,7 +40,7 @@ def target_html(driver, album):
 
     WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.CLASS_NAME, 'header-new-title')))
     html = driver.page_source
-    driver.save_screenshot('album_page.png')
+    driver.save_screenshot('Screenshots/album_page.png')
     
     homepage_return = WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.LINK_TEXT, 'Last.fm')))
     homepage_return.click()
@@ -50,7 +50,7 @@ def target_html(driver, album):
     back_to_searchbar = WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.CLASS_NAME, 'masthead-search-toggle')))
     back_to_searchbar.click()
     
-    driver.save_screenshot('reset.png')
+    driver.save_screenshot('Screenshots/reset.png')
     
     return html
 
@@ -75,15 +75,19 @@ def fetch_album_info(driver, album):
             release = metadata[1].text
 
             album_info = [artist, runtime.strip(), release.strip(), genre_tags]
-            return album_info
+            print(album_info)
 
         else:
             album_info = [artist, 'NA', 'NA', genre_tags]
-            return album_info
+            print(album_info)
 
     except IndexError:
         print('Error')
 
 album = str(input('Enter album name to fetch info: '))
 driver = webdriver_init()
-fetch_album_info(driver, album)
+
+album = ['Insano', 'Blonde', 'Continuum', 'Room for Squares', 'Heavier Things']
+
+for album in album:
+    fetch_album_info(driver, album)
