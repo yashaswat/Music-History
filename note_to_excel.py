@@ -6,6 +6,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 import music_scrape
 
+
 def arrow_index(list):
     for i, s in enumerate(list):
         if '<===========' in s:
@@ -31,7 +32,7 @@ def music_info_to_dict(data, note_path):
             data['music project'].append(entry[0].rstrip())
             data['artist'].append(entry[1].rstrip())
     f.close()
-    
+  
 
 def spotify_logging_status(data):
     
@@ -51,7 +52,7 @@ def spotify_logging_status(data):
         else:
             data['spotify logged'][i] = 'No'
             data['artist'][i] = data['artist'][i].replace(' â‚¹', '')
-            
+
 
 def current_progress_marking(data):
     
@@ -74,12 +75,24 @@ def current_progress_marking(data):
         for i in range(artist_arrow+1, len(data['music project'])):
             data['spotify logged'][i] = 'No'
 
-            
+
 def fill_metadata(data, error_log):
+    
+    driver = music_scrape.webdriver_init()
     
     for i, album in enumerate(data['music project']):
         
-        info = music_scrape.fetch_album_info(album)
+        if i > 0 and i % 5 == 0:
+            driver.delete_all_cookies()
+            driver.execute_script("window.localStorage.clear();")
+            driver.refresh()
+            
+        if i > 0 and i % 15 == 0:
+            driver.quit()
+            driver = music_scrape.webdriver_init()
+        
+        info = music_scrape.fetch_album_info(driver, album)
+        print(album, info)
         
         data['runtime'] = info[1]
         data['release date'] = info[2]
@@ -95,8 +108,8 @@ def fill_metadata(data, error_log):
         except IndexError:
             data['artist'] = 'Error'
             error_log.append(album)
-            
-                              
+
+
 note_path = 'album_list.txt'
 
 data = {
