@@ -7,17 +7,14 @@ from selenium.webdriver.support import expected_conditions as EC
 def webdriver_init():
         
     options = webdriver.ChromeOptions()
-    # options.add_argument('--headless=new')
+    options.add_argument('--headless=new')
     options.add_argument("--disable-extensions")
     options.add_argument("--disable-features=UseChromeML")
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
-    # options.add_argument("disable-accelerated-2d-canvas")
-    # options.add_argument("--disable-software-rasterizer")  
-    # options.add_argument("--disable-dev-shm-usage")
       
-    # options.add_experimental_option('prefs', {'profile.managed_default_content_settings.images': 2,
-    #                                       'profile.managed_default_content_settings.javascript': 2})
+    options.add_experimental_option('prefs', {'profile.managed_default_content_settings.images': 2,
+                                           'profile.managed_default_content_settings.javascript': 2})
 
     driver = webdriver.Chrome(options=options)
     
@@ -41,12 +38,16 @@ def hello(driver, album):
 
     WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, 'header-new-title')))
     html = driver.page_source
-    driver.save_screenshot('album_page.png')
+    # driver.save_screenshot('album_page.png')
     
     reset = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.LINK_TEXT, 'Last.fm')))
     reset.click()
+    
+    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, 'spike_intro')))
     return_to_search = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, 'masthead-search-toggle')))
     return_to_search.click()
+    
+    driver.save_screenshot('album_page.png')
     
     return html
 
