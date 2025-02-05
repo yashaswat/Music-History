@@ -1,5 +1,6 @@
 import pandas as pd
 
+import selenium
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
@@ -82,8 +83,12 @@ def fill_metadata(data, error_log):
     
     for i, album in enumerate(data['music project']):
         
-        info = music_scrape.fetch_album_info(driver, album)
-        print(album, info)
+        try:
+            info = music_scrape.fetch_album_info(driver, album)
+            print(album, info)
+            
+        except (selenium.common.exceptions.TimeoutException):
+            continue
         
         data['runtime'] = info[1]
         data['release date'] = info[2]

@@ -1,4 +1,5 @@
 import random
+import time
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -23,7 +24,7 @@ def webdriver_init(url='https://www.last.fm/search/albums'):
     random_agent = random.choice(user_agents)
         
     options = uc.ChromeOptions()
-    # options.add_argument('--headless=new')
+    
     options.add_argument("--disable-extensions")
     options.add_argument("--disable-features=UseChromeML")
     options.add_argument("--disable-gpu")
@@ -52,21 +53,21 @@ def target_html(driver, album):
     # <input id="site-search" class="search-field" type="text" name="q" placeholder="Search for music…" value="" required="">
     search_bar = wait.until(EC.presence_of_element_located((By.ID, 'site-search')))
     search_bar.click()
-    
+    time.sleep(1)
     search_bar.send_keys(album)
     search_bar.submit()
     
     album_tab = wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="mantle_skin"]/div[2]/div/div[3]/nav/ul/li[3]/a')))
     album_tab.click()
-
+    time.sleep(1)
     # <a href="/music/Frank+Ocean/Blonde" title="Blonde" class="link-block-target">Blonde</a>
     album = wait.until(EC.presence_of_element_located((By.PARTIAL_LINK_TEXT, album)))
     album.click()
-
+    time.sleep(1)
     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'header-new-title')))
     html = driver.page_source
     driver.save_screenshot('Screenshots/album_page.png')
-    
+    time.sleep(1)
     homepage_return = wait.until(EC.presence_of_element_located((By.LINK_TEXT, 'Last.fm')))
     homepage_return.click()
     
@@ -74,7 +75,7 @@ def target_html(driver, album):
     
     back_to_searchbar = wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'masthead-search-toggle')))
     back_to_searchbar.click()
-    
+    time.sleep(1)
     driver.save_screenshot('Screenshots/reset.png')
     
     return html
