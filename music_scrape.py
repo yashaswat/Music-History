@@ -1,3 +1,5 @@
+import random
+
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -5,22 +7,38 @@ from selenium.webdriver.support import expected_conditions as EC
 
 from bs4 import BeautifulSoup
 
+import undetected_chromedriver as uc
 
 def webdriver_init(url='https://www.last.fm/search/albums'):
+    
+    # List of User-Agent strings
+    user_agents = [
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36",
+        "Mozilla/5.0 (iPhone14,3; U; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/602.1.50 (KHTML, like Gecko) Version/10.0 Mobile/19A346 Safari/602.1",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36 OPR/109.0.0.0"
+]
+
+    random_agent = random.choice(user_agents)
         
-    options = webdriver.ChromeOptions()
-    options.add_argument('--headless=new')
+    options = uc.ChromeOptions()
+    # options.add_argument('--headless=new')
     options.add_argument("--disable-extensions")
     options.add_argument("--disable-features=UseChromeML")
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-blink-features=AutomationControlled")
     options.add_argument("--log-level=1")
+    options.add_argument("--disable-popup-blocking")
+    options.add_argument("--disable-software-rasterizer")
+    
+    options.add_argument(f'user-agent={random_agent}')
     
     options.add_experimental_option('prefs', {'profile.managed_default_content_settings.images': 2,
                                           'profile.managed_default_content_settings.javascript': 2})
 
-    driver = webdriver.Chrome(options=options)
+    driver = uc.Chrome(options=options)
     driver.get(url)
     
     driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")

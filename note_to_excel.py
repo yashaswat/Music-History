@@ -99,6 +99,8 @@ def fill_metadata(data, error_log):
         except IndexError:
             data['artist'] = 'Error'
             error_log.append(album)
+    
+    driver.quit()
 
 
 note_path = 'album_list.txt'
