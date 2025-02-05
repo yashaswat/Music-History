@@ -29,30 +29,32 @@ def webdriver_init(url='https://www.last.fm/search/albums'):
 
 def target_html(driver, album):
 
+    wait = WebDriverWait(driver, 10)
+    
     # <input id="site-search" class="search-field" type="text" name="q" placeholder="Search for music…" value="" required="">
-    search_bar = driver.find_element(By.ID, 'site-search')
+    search_bar = wait.until(EC.presence_of_element_located((By.ID, 'site-search')))
     search_bar.click()
     
     search_bar.send_keys(album)
     search_bar.submit()
     
-    album_tab = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="mantle_skin"]/div[2]/div/div[3]/nav/ul/li[3]/a')))
+    album_tab = wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="mantle_skin"]/div[2]/div/div[3]/nav/ul/li[3]/a')))
     album_tab.click()
 
     # <a href="/music/Frank+Ocean/Blonde" title="Blonde" class="link-block-target">Blonde</a>
-    album = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.PARTIAL_LINK_TEXT, album)))
+    album = wait.until(EC.presence_of_element_located((By.PARTIAL_LINK_TEXT, album)))
     album.click()
 
-    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, 'header-new-title')))
+    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'header-new-title')))
     html = driver.page_source
     driver.save_screenshot('Screenshots/album_page.png')
     
-    homepage_return = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.LINK_TEXT, 'Last.fm')))
+    homepage_return = wait.until(EC.presence_of_element_located((By.LINK_TEXT, 'Last.fm')))
     homepage_return.click()
     
-    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, 'spike_intro')))
+    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'spike_intro')))
     
-    back_to_searchbar = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, 'masthead-search-toggle')))
+    back_to_searchbar = wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'masthead-search-toggle')))
     back_to_searchbar.click()
     
     driver.save_screenshot('Screenshots/reset.png')
@@ -89,10 +91,12 @@ def fetch_album_info(driver, album):
     except IndexError:
         print('Error')
 
-# test_album = str(input('Enter Album to search: '))
-# driver = webdriver_init()
+if __name__ == '__main__':
+    
+    test_album = str(input('Enter Album to search: '))
+    driver = webdriver_init()
 
-# album = ['Insano', 'Blonde', 'Continuum', f'{test_album}', 'Room for Squares', 'Heavier Things']
+    album = ['Insano', 'Blonde', 'Continuum', f'{test_album}', 'Room for Squares', 'Heavier Things']
 
-# for album in album:
-#     fetch_album_info(driver, album)
+    for album in album:
+        fetch_album_info(driver, album)

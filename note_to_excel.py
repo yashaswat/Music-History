@@ -82,15 +82,6 @@ def fill_metadata(data, error_log):
     
     for i, album in enumerate(data['music project']):
         
-        if i > 0 and i % 5 == 0:
-            driver.delete_all_cookies()
-            driver.execute_script("window.localStorage.clear();")
-            driver.refresh()
-            
-        if i > 0 and i % 15 == 0:
-            driver.quit()
-            driver = music_scrape.webdriver_init()
-        
         info = music_scrape.fetch_album_info(driver, album)
         print(album, info)
         
