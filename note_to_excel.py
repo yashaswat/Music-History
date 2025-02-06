@@ -1,3 +1,4 @@
+import sys
 import pandas as pd
 
 import selenium
@@ -88,7 +89,17 @@ def fill_metadata(data, error_log):
             print(album, info)
             
         except (selenium.common.exceptions.TimeoutException):
+            data['runtime'] = 'Error fetch'
+            data['release date'] = 'Error fetch'
+            data['genre tags'] = 'Error fetch'
+            data['artist'] = 'Error fetch'
+            
             continue
+        
+        except (OSError, selenium.common.exceptions.InvalidSessionIdException):
+            print('\nEnding program and exiting browser...')
+            driver.quit()
+            break
         
         data['runtime'] = info[1]
         data['release date'] = info[2]
