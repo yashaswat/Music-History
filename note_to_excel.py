@@ -1,10 +1,6 @@
-import sys
 import pandas as pd
-
+import json
 import selenium
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from webdriver_manager.chrome import ChromeDriverManager
 
 import music_scrape
 
@@ -18,6 +14,9 @@ def arrow_index(list):
 
 def music_info_to_dict(data, note_path):
 
+    if data['artist']:
+        return
+    
     f = open(note_path , 'r')
 
     for entry in f.readlines():
@@ -38,6 +37,9 @@ def music_info_to_dict(data, note_path):
 
 def spotify_logging_status(data):
     
+    if data['spotify logged']:
+        return
+    
     for i, album in enumerate(data['music project']):
 
         if 'â‚¹' not in album:
@@ -57,6 +59,9 @@ def spotify_logging_status(data):
 
 
 def current_progress_marking(data):
+    
+    if 'Current' in data['spotify logged']:
+        return
     
     artist_arrow = arrow_index(data['artist'])
     album_arrow = arrow_index(data['music project'])
@@ -82,18 +87,20 @@ def fill_metadata(data, error_log):
     
     driver = music_scrape.webdriver_init()
     
-    for i, album in enumerate(data['music project']):
+    start_point = len(data['release date'])
+    
+    for i, album in enumerate(data['music project'][start_point:]):
         
         try:
             info = music_scrape.fetch_album_info(driver, album)
             print(album, info)
             
         except (selenium.common.exceptions.TimeoutException):
-            data['runtime'] = 'Error fetch'
-            data['release date'] = 'Error fetch'
-            data['genre tags'] = 'Error fetch'
-            data['artist'] = 'Error fetch'
-            
+            data['runtime'].append('Error fetch')
+            data['release date'].append('Error fetch')
+            data['genre tags'].append(['Error fetch'])
+            data['artist'][i] = 'Error fetch'
+            print(album, '\n')
             continue
         
         except (OSError, selenium.common.exceptions.InvalidSessionIdException):
@@ -101,34 +108,33 @@ def fill_metadata(data, error_log):
             driver.quit()
             break
         
-        data['runtime'] = info[1]
-        data['release date'] = info[2]
-        data['genre tags'] = info[3]
+        i += start_point
+        
+        data['runtime'].append(info[1])
+        data['release date'].append(info[2])
+        data['genre tags'].append(info[3])
         
         try:
             if data['artist'][i] == '':
-                data['artist'] = info[0]
+                data['artist'][i] = info[0]
             
             else:
                 continue
         
         except IndexError:
-            data['artist'] = 'Error'
+            data['artist'][i] = 'Index Error'
             error_log.append(album)
+            
+        with open('data.json', 'w') as jsonfile:
+            json.dump(data, jsonfile, indent=4)
     
     driver.quit()
 
 
 note_path = 'album_list.txt'
 
-data = {
-    'music project' : [],
-    'artist' : [],
-    'runtime' : [],
-    'release date' : [],
-    'spotify logged' : [],
-    'genre tags' : []
-}
+with open('data.json', 'r') as jsonfile:
+    data = json.load(jsonfile)
 
 error_log = []
 

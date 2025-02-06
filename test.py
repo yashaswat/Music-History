@@ -57,3 +57,12 @@ hi = webdriver_init()
 
 for i in album:
     hello(hi, i)
+    
+# {
+#     "music project": [],
+#     "artist": [],
+#     "spotify logged": [],
+#     "runtime": [],
+#     "release date": [],
+#     "genre tags": []
+# }
