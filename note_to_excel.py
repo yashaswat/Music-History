@@ -1,4 +1,5 @@
 import pandas as pd
+import openpyxl
 import json
 import selenium
 
@@ -95,7 +96,7 @@ def get_keep_info(data, note_path):
 def fill_metadata(data, error_log):
     
     driver = music_scrape.webdriver_init()
-    
+
     start_point = len(data['release date'])
     
     for i, album in enumerate(data['music project'][start_point:]):
@@ -152,9 +153,9 @@ fill_metadata(data, error_log)
 
 df = pd.DataFrame(data)
 
-datatoexcel = pd.ExcelWriter('my_music_history.xlsx')
-df.to_excel(datatoexcel)
-datatoexcel.close()
+excel_writer = pd.ExcelWriter('my_music_history.xlsx')
+df.to_excel(excel_writer, index=False)
+excel_writer.close()
 
 if error_log:
     print(f'Error in following albums: {error_log}')

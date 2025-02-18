@@ -16,7 +16,7 @@ def webdriver_init():
     options.add_experimental_option('prefs', {'profile.managed_default_content_settings.images': 2,
                                            'profile.managed_default_content_settings.javascript': 2})
 
-    driver = webdriver.Chrome(options=options)
+    driver = webdriver.Chrome(options=options, headless=True)
     
     driver.get('https://www.last.fm/search/albums')
     
@@ -59,8 +59,8 @@ for i in album:
     hello(hi, i)
     
 # {
-#     "music project": [],
 #     "artist": [],
+#     "music project": [],
 #     "spotify logged": [],
 #     "runtime": [],
 #     "release date": [],
