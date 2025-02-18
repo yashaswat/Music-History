@@ -63,7 +63,7 @@ def target_html(driver, album):
     search_bar = wait.until(EC.presence_of_element_located((By.ID, 'site-search')))
     search_bar.click()
     
-    time.sleep(1)
+    # time.sleep(1)
 
     search_bar.clear()
     search_bar.send_keys(album)
@@ -78,7 +78,7 @@ def target_html(driver, album):
     album = wait.until(EC.presence_of_element_located((By.PARTIAL_LINK_TEXT, album)))
     album.click()
     
-    time.sleep(1)
+    # time.sleep(1)
     
     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'header-new-title')))
     html = driver.page_source

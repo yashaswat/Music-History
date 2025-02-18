@@ -83,6 +83,15 @@ def current_progress_marking(data):
             data['spotify logged'][i] = 'No'
 
 
+def get_keep_info(data, note_path):
+    
+    music_info_to_dict(data, note_path)
+    
+    spotify_logging_status(data)
+    
+    current_progress_marking(data)
+    
+
 def fill_metadata(data, error_log):
     
     driver = music_scrape.webdriver_init()
@@ -138,9 +147,7 @@ with open('data.json', 'r') as jsonfile:
 
 error_log = []
 
-music_info_to_dict(data, note_path)
-spotify_logging_status(data)
-current_progress_marking(data)
+get_keep_info(data, note_path)
 fill_metadata(data, error_log)
 
 df = pd.DataFrame(data)
