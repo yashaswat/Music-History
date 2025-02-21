@@ -93,7 +93,7 @@ def get_keep_info(data, note_path):
     current_progress_marking(data)
     
 
-def fill_metadata(data, error_log):
+def fill_metadata(data, result_file):
     
     driver = music_scrape.webdriver_init()
 
@@ -124,41 +124,29 @@ def fill_metadata(data, error_log):
         data['release date'].append(info[2])
         data['genre tags'].append(info[3])
         
-        try:
-            if data['artist'][i] == '':
-                data['artist'][i] = info[0]
-            
-            else:
-                continue
-        
-        except IndexError:
-            data['artist'][i] = 'Index Error'
-            error_log.append(album)
-            
-        with open('data.json', 'w') as jsonfile:
+        if data['artist'][i] == '':
+            data['artist'][i] = info[0]
+
+        else:
+            continue
+
+        with open('result_file', 'w') as jsonfile:
             json.dump(data, jsonfile, indent=4)
-    
+
     driver.quit()
 
 
 note_path = 'album_list.txt'
+result_file = 'data.json'
 
-with open('data.json', 'r') as jsonfile:
+with open(result_file, 'r') as jsonfile:
     data = json.load(jsonfile)
 
-error_log = []
-
 get_keep_info(data, note_path)
-fill_metadata(data, error_log)
+fill_metadata(data, result_file)
 
 df = pd.DataFrame(data)
 
 excel_writer = pd.ExcelWriter('my_music_history.xlsx')
 df.to_excel(excel_writer, index=False)
 excel_writer.close()
-
-if error_log:
-    print(f'Error in following albums: {error_log}')
-    print('\n Rest exported sucessfully')
-else:
-    print('Successfully exported to Excel')
