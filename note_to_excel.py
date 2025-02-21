@@ -2,7 +2,6 @@ import pandas as pd
 import openpyxl
 import json
 import selenium
-
 import music_scrape
 
 
@@ -99,11 +98,27 @@ def fill_metadata(data, result_file):
 
     start_point = len(data['release date'])
     
+    
     for i, album in enumerate(data['music project'][start_point:]):
         
         try:
             info = music_scrape.fetch_album_info(driver, album)
             print(album, info)
+            
+            i += start_point
+        
+            data['runtime'].append(info[1])
+            data['release date'].append(info[2])
+            data['genre tags'].append(info[3])
+            
+            if data['artist'][i] == '':
+                data['artist'][i] = info[0]
+
+            else:
+                continue
+
+            with open(result_file, 'w') as jsonfile:
+                json.dump(data, jsonfile, indent=4)
             
         except (selenium.common.exceptions.TimeoutException):
             data['runtime'].append('Error fetch')
@@ -112,27 +127,7 @@ def fill_metadata(data, result_file):
             data['artist'][i] = 'Error fetch'
             print(album, '\n')
             continue
-        
-        except (OSError, selenium.common.exceptions.InvalidSessionIdException):
-            print('\nEnding program and exiting browser...')
-            driver.quit()
-            break
-        
-        i += start_point
-        
-        data['runtime'].append(info[1])
-        data['release date'].append(info[2])
-        data['genre tags'].append(info[3])
-        
-        if data['artist'][i] == '':
-            data['artist'][i] = info[0]
-
-        else:
-            continue
-
-        with open('result_file', 'w') as jsonfile:
-            json.dump(data, jsonfile, indent=4)
-
+  
     driver.quit()
 
 
@@ -150,3 +145,4 @@ df = pd.DataFrame(data)
 excel_writer = pd.ExcelWriter('my_music_history.xlsx')
 df.to_excel(excel_writer, index=False)
 excel_writer.close()
+print('\nSUCESSFULLY EXPORTED MUSIC DATA TO EXCEL!\n')
