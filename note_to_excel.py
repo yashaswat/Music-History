@@ -1,10 +1,7 @@
-import sys
 import pandas as pd
-
+import openpyxl
+import json
 import selenium
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from webdriver_manager.chrome import ChromeDriverManager
 
 import music_scrape
 
@@ -18,6 +15,9 @@ def arrow_index(list):
 
 def music_info_to_dict(data, note_path):
 
+    if data['artist']:
+        return
+    
     f = open(note_path , 'r')
 
     for entry in f.readlines():
@@ -37,6 +37,9 @@ def music_info_to_dict(data, note_path):
   
 
 def spotify_logging_status(data):
+    
+    if data['spotify logged']:
+        return
     
     for i, album in enumerate(data['music project']):
 
@@ -58,6 +61,9 @@ def spotify_logging_status(data):
 
 def current_progress_marking(data):
     
+    if 'Current' in data['spotify logged']:
+        return
+    
     artist_arrow = arrow_index(data['artist'])
     album_arrow = arrow_index(data['music project'])
 
@@ -78,22 +84,33 @@ def current_progress_marking(data):
             data['spotify logged'][i] = 'No'
 
 
-def fill_metadata(data, error_log):
+def get_keep_info(data, note_path):
+    
+    music_info_to_dict(data, note_path)
+    
+    spotify_logging_status(data)
+    
+    current_progress_marking(data)
+    
+
+def fill_metadata(data, result_file):
     
     driver = music_scrape.webdriver_init()
+
+    start_point = len(data['release date'])
     
-    for i, album in enumerate(data['music project']):
+    for i, album in enumerate(data['music project'][start_point:]):
         
         try:
             info = music_scrape.fetch_album_info(driver, album)
             print(album, info)
             
         except (selenium.common.exceptions.TimeoutException):
-            data['runtime'] = 'Error fetch'
-            data['release date'] = 'Error fetch'
-            data['genre tags'] = 'Error fetch'
-            data['artist'] = 'Error fetch'
-            
+            data['runtime'].append('Error fetch')
+            data['release date'].append('Error fetch')
+            data['genre tags'].append(['Error fetch'])
+            data['artist'][i] = 'Error fetch'
+            print(album, '\n')
             continue
         
         except (OSError, selenium.common.exceptions.InvalidSessionIdException):
@@ -101,50 +118,35 @@ def fill_metadata(data, error_log):
             driver.quit()
             break
         
-        data['runtime'] = info[1]
-        data['release date'] = info[2]
-        data['genre tags'] = info[3]
+        i += start_point
         
-        try:
-            if data['artist'][i] == '':
-                data['artist'] = info[0]
-            
-            else:
-                continue
+        data['runtime'].append(info[1])
+        data['release date'].append(info[2])
+        data['genre tags'].append(info[3])
         
-        except IndexError:
-            data['artist'] = 'Error'
-            error_log.append(album)
-    
+        if data['artist'][i] == '':
+            data['artist'][i] = info[0]
+
+        else:
+            continue
+
+        with open('result_file', 'w') as jsonfile:
+            json.dump(data, jsonfile, indent=4)
+
     driver.quit()
 
 
 note_path = 'album_list.txt'
+result_file = 'data.json'
 
-data = {
-    'music project' : [],
-    'artist' : [],
-    'runtime' : [],
-    'release date' : [],
-    'spotify logged' : [],
-    'genre tags' : []
-}
+with open(result_file, 'r') as jsonfile:
+    data = json.load(jsonfile)
 
-error_log = []
-
-music_info_to_dict(data, note_path)
-spotify_logging_status(data)
-current_progress_marking(data)
-fill_metadata(data, error_log)
+get_keep_info(data, note_path)
+fill_metadata(data, result_file)
 
 df = pd.DataFrame(data)
 
-datatoexcel = pd.ExcelWriter('my_music_history.xlsx')
-df.to_excel(datatoexcel)
-datatoexcel.close()
-
-if error_log:
-    print(f'Error in following albums: {error_log}')
-    print('\n Rest exported sucessfully')
-else:
-    print('Successfully exported to Excel')
+excel_writer = pd.ExcelWriter('my_music_history.xlsx')
+df.to_excel(excel_writer, index=False)
+excel_writer.close()

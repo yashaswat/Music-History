@@ -1,7 +1,7 @@
 import random
 import time
+import json
 
-from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -17,10 +17,10 @@ def load_user_agent():
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36",
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36",
-        "Mozilla/5.0 (iPhone14,3; U; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/602.1.50 (KHTML, like Gecko) Version/10.0 Mobile/19A346 Safari/602.1",
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36 OPR/109.0.0.0"
 ]
     return random.choice(user_agents)
+
 
 def load_options(random_agent):
     
@@ -42,26 +42,28 @@ def load_options(random_agent):
     
     return options
 
+
 def webdriver_init(url='https://www.last.fm/search/albums'):
 
     random_agent = load_user_agent()
 
-    driver = uc.Chrome(options=load_options(random_agent))
+    driver = uc.Chrome(options=load_options(random_agent), headless=True)
     driver.get(url)
     
     driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
     
     return driver
 
+
 def target_html(driver, album):
 
-    wait = WebDriverWait(driver, 10)
+    wait = WebDriverWait(driver, 5)
     
     # <input id="site-search" class="search-field" type="text" name="q" placeholder="Search for music…" value="" required="">
     search_bar = wait.until(EC.presence_of_element_located((By.ID, 'site-search')))
     search_bar.click()
     
-    time.sleep(1)
+    # time.sleep(1)
 
     search_bar.clear()
     search_bar.send_keys(album)
@@ -76,7 +78,7 @@ def target_html(driver, album):
     album = wait.until(EC.presence_of_element_located((By.PARTIAL_LINK_TEXT, album)))
     album.click()
     
-    time.sleep(1)
+    # time.sleep(1)
     
     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'header-new-title')))
     html = driver.page_source
@@ -98,8 +100,9 @@ def target_html(driver, album):
     
     return html
 
+
 def fetch_album_info(driver, album):
-    
+
     album_page_html = target_html(driver, album)
     soup = BeautifulSoup(album_page_html, 'html.parser')
 
@@ -127,6 +130,7 @@ def fetch_album_info(driver, album):
 
     except IndexError:
         print('Error')
+
 
 if __name__ == '__main__':
     
