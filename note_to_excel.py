@@ -13,60 +13,83 @@ def arrow_index(list):
     return -1
 
 
+# store album and artist data from personal list into dictionary
 def music_info_to_dict(data, note_path):
 
-    if data['artist']:
+    txtnote = open(note_path , 'r').readlines()
+    
+    txtlen = len(txtnote)
+    jsonlen = len(data['artist'])
+    
+    print(f"No. of new album entries: {txtlen-jsonlen}")
+
+    # if json file already has all fetched data, exit
+    if jsonlen == txtlen:
         return
     
-    f = open(note_path , 'r')
-
-    for entry in f.readlines():
+    for entry in txtnote[jsonlen:]:
         
         if entry == '\n':
             continue
         
         if ' by ' not in entry:
-            entry = entry.rstrip()
+            entry = entry.rstrip() # remove counting '.'
             data['music project'].append(entry)
-            data['artist'].append('')
+            data['artist'].append('') # leave artist empty
         else:
             entry = entry.split(' by ')
             data['music project'].append(entry[0].rstrip())
             data['artist'].append(entry[1].rstrip())
-    f.close()
+    # txtnote.close()
   
 
-def spotify_logging_status(data):
+# mark if I logged my top 3 songs from album in my spotify playlist
+# identified using '₹' (not logged)
+def spotify_logging_status(data, note_path):
     
-    if data['spotify logged']:
+    txtnote = open(note_path , 'r').readlines()
+    
+    txtlen = len(txtnote)
+    jsonlen = len(data['spotify logged'])
+    
+    if jsonlen == txtlen: # if json file already has fetched data, exit
         return
     
-    for i, album in enumerate(data['music project']):
-
+    for i, album in enumerate(data['music project'][jsonlen:]):
+        
+        # mark albums without ₹ as logged
         if 'â‚¹' not in album:
             data['spotify logged'].append('Yes')
-            data['music project'][i] = data['music project'][i].replace(' â‚¹', '').lstrip('.')
+            data['music project'][i+jsonlen] = data['music project'][i+jsonlen].replace(' â‚¹', '').lstrip('.')
         else:
             data['spotify logged'].append('No')
-            data['music project'][i] = data['music project'][i].replace(' â‚¹', '').lstrip('.')
+            data['music project'][i+jsonlen] = data['music project'][i+jsonlen].replace(' â‚¹', '').lstrip('.')
    
     for i, artist in enumerate(data['artist']):
 
+        # albums with artists have ₹ in artists list
+        # mark those as not logged
         if 'â‚¹' not in artist:
             continue
         else:
-            data['spotify logged'][i] = 'No'
-            data['artist'][i] = data['artist'][i].replace(' â‚¹', '')
+            data['spotify logged'][i+jsonlen] = 'No'
+            data['artist'][i+jsonlen] = data['artist'][i+jsonlen].replace(' â‚¹', '')
 
 
+# mark point i have currently reached in spotify logging
+# identified using '<==========='
+# albums below arrow are all not logged
 def current_progress_marking(data):
     
-    if 'Current' in data['spotify logged']:
-        return
+    # if 'Current' in data['spotify logged']: 
+    #     return
     
+    # arrow can be in album or artist array
     artist_arrow = arrow_index(data['artist'])
     album_arrow = arrow_index(data['music project'])
 
+    # mark logged status as 'Current'
+    # remove arrow from array
     if album_arrow != -1:
 
         data['music project'][album_arrow] = data['music project'][album_arrow].replace('<===========', '')
@@ -88,7 +111,7 @@ def get_keep_info(data, note_path):
     
     music_info_to_dict(data, note_path)
     
-    spotify_logging_status(data)
+    spotify_logging_status(data, note_path)
     
     current_progress_marking(data)
     
@@ -98,7 +121,6 @@ def fill_metadata(data, result_file):
     driver = music_scrape.webdriver_init()
 
     start_point = len(data['release date'])
-    
     
     for i, album in enumerate(data['music project'][start_point:]):
         
@@ -132,8 +154,8 @@ def fill_metadata(data, result_file):
     driver.quit()
 
 
-note_path = 'album_list.txt'
-result_file = 'data.json'
+note_path = 'Test/test.txt'
+result_file = 'Test/test.json'
 
 with open(result_file, 'r') as jsonfile:
     data = json.load(jsonfile)
@@ -143,7 +165,7 @@ fill_metadata(data, result_file)
 
 df = pd.DataFrame(data)
 
-excel_writer = pd.ExcelWriter('my_music_history.xlsx')
+excel_writer = pd.ExcelWriter('Test/test.xlsx')
 df.to_excel(excel_writer, index=False)
 excel_writer.close()
 print('\nSUCESSFULLY EXPORTED MUSIC DATA TO EXCEL!\n')
