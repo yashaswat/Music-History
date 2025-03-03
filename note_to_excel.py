@@ -6,9 +6,13 @@ import selenium
 import music_scrape
 import gkeep
 
+
 def arrow_index(list):
+    
     for i, s in enumerate(list):
         if '<===========' in s:
+            return i
+        elif 'Current' in s:
             return i
     return -1
 
@@ -65,7 +69,7 @@ def spotify_logging_status(data, note_path):
             data['spotify logged'].append('No')
             data['music project'][i+jsonlen] = data['music project'][i+jsonlen].replace(' â‚¹', '').lstrip('.')
    
-    for i, artist in enumerate(data['artist']):
+    for i, artist in enumerate(data['artist'][jsonlen:]):
 
         # albums with artists have ₹ in artists list
         # mark those as not logged
@@ -79,32 +83,43 @@ def spotify_logging_status(data, note_path):
 # mark point i have currently reached in spotify logging
 # identified using '<==========='
 # albums below arrow are all not logged
-def current_progress_marking(data):
-    
-    # if 'Current' in data['spotify logged']: 
-    #     return
-    
-    # arrow can be in album or artist array
-    artist_arrow = arrow_index(data['artist'])
-    album_arrow = arrow_index(data['music project'])
-
-    # mark logged status as 'Current'
-    # remove arrow from array
-    if album_arrow != -1:
-
-        data['music project'][album_arrow] = data['music project'][album_arrow].replace('<===========', '')
-        data['spotify logged'][album_arrow] = 'Current'
-
-        for i in range(album_arrow+1, len(data['music project'])):
-            data['spotify logged'][i] = 'No'
+def current_progress_marking(data, note_path):
         
-    if artist_arrow != -1:
+    if 'Current' in data['spotify logged']:
+        
+        txtnote = open(note_path , 'r').readlines()
+    
+        txtarrow = arrow_index(txtnote)
+        jsonarrow = arrow_index(data['spotify logged'])
+        
+        # compare and update position of 'Current' marker
+        if txtarrow == jsonarrow:
+            return
+        else:
+            data['spotify logged'][jsonarrow] = 'Yes'
+            data['spotify logged'][txtarrow] = 'Current'
+    
+    else:
+        
+        artist_arrow = arrow_index(data['artist'])
+        album_arrow = arrow_index(data['music project'])
+        
+        # mark logged status as 'Current'
+        # remove arrow from array
+        if album_arrow != -1:
 
-        data['artist'][artist_arrow] = data['artist'][artist_arrow].replace('<===========', '')
-        data['spotify logged'][artist_arrow] = 'Current'
+            data['music project'][album_arrow] = data['music project'][album_arrow].replace('<===========', '')
+            data['spotify logged'][album_arrow] = 'Current'
+            
+        if artist_arrow != -1:
 
-        for i in range(artist_arrow+1, len(data['music project'])):
-            data['spotify logged'][i] = 'No'
+            data['artist'][artist_arrow] = data['artist'][artist_arrow].replace('<===========', '')
+            data['spotify logged'][artist_arrow] = 'Current'
+    
+    # find index of 'Current' and mark all statuses below it as 'No'
+    curr_index = arrow_index(data['spotify logged'])
+    for i in range(curr_index+1, len(data['spotify logged'])):
+                data['spotify logged'][i] = 'No'
 
 
 def get_keep_info(data, note_path):
@@ -113,7 +128,7 @@ def get_keep_info(data, note_path):
     
     spotify_logging_status(data, note_path)
     
-    current_progress_marking(data)
+    current_progress_marking(data, note_path)
     
 
 def fill_metadata(data, result_file):
@@ -139,9 +154,6 @@ def fill_metadata(data, result_file):
 
             else:
                 continue
-
-            with open(result_file, 'w') as jsonfile:
-                json.dump(data, jsonfile, indent=4)
             
         except (selenium.common.exceptions.TimeoutException):
             data['runtime'].append('Error fetch')
@@ -154,14 +166,17 @@ def fill_metadata(data, result_file):
     driver.quit()
 
 
-note_path = 'Test/test.txt'
-result_file = 'Test/test.json'
+NOTE_PATH = 'Test/test.txt'
+RESULT_FILE = 'Test/test.json'
 
-with open(result_file, 'r') as jsonfile:
+with open(RESULT_FILE, 'r') as jsonfile:
     data = json.load(jsonfile)
 
-get_keep_info(data, note_path)
-fill_metadata(data, result_file)
+get_keep_info(data, NOTE_PATH)
+fill_metadata(data, RESULT_FILE)
+
+with open(RESULT_FILE, 'w') as jsonfile:
+    json.dump(data, jsonfile, indent=4)
 
 df = pd.DataFrame(data)
 
