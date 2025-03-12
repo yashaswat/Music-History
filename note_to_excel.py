@@ -80,6 +80,16 @@ def spotify_logging_status(data, note_path):
             data['artist'][i+jsonlen] = data['artist'][i+jsonlen].replace(' â‚¹', '')
 
 
+def update_logs(data, start_index, end_index, txtnote):
+    
+    for i in range(start_index, end_index):
+        
+        if 'â‚¹' in txtnote[i]:
+            data['spotify logged'][i] = 'No'
+        else:
+            data['spotify logged'][i] = 'Yes'
+
+
 # mark point i have currently reached in spotify logging
 # identified using '<==========='
 # albums below arrow are all not logged
@@ -96,9 +106,9 @@ def current_progress_marking(data, note_path):
         if txtarrow == jsonarrow:
             return
         else:
-            data['spotify logged'][jsonarrow] = 'Yes'
             data['spotify logged'][txtarrow] = 'Current'
-    
+            update_logs(data, start_index=jsonarrow, end_index=txtarrow, txtnote=txtnote)
+            
     else:
         
         artist_arrow = arrow_index(data['artist'])
@@ -133,18 +143,21 @@ def get_keep_info(data, note_path):
 
 def fill_metadata(data, result_file):
     
-    driver = music_scrape.webdriver_init()
+    driver = music_scrape.webdriver_init() # initialize chrome webdriver and tab
 
-    start_point = len(data['release date'])
+    start_point = len(data['release date']) # start from last ending point
     
     for i, album in enumerate(data['music project'][start_point:]):
         
         try:
-            info = music_scrape.fetch_album_info(driver, album)
+            
+            # get list of artist name, runtime, release date and genre tags
+            info = music_scrape.fetch_album_info(driver, album) 
             print(album, info)
             
             i += start_point
-        
+
+            # unpack list and add details to json data
             data['runtime'].append(info[1])
             data['release date'].append(info[2])
             data['genre tags'].append(info[3])
@@ -162,25 +175,32 @@ def fill_metadata(data, result_file):
             data['artist'][i] = 'Error fetch'
             print(album, '\n')
             continue
-  
+        
+        with open(RESULT_FILE, 'w') as jsonfile:
+            json.dump(data, jsonfile, indent=4)
+        
     driver.quit()
 
 
-NOTE_PATH = 'Test/test.txt'
-RESULT_FILE = 'Test/test.json'
+NOTE_PATH = 'album_list.txt'
+RESULT_FILE = 'data.json'
+EXCEL_FILE = 'my_music_history.xlsx'
+
+gkeep.update_local_txt(NOTE_PATH, gkeep.note_id)
 
 with open(RESULT_FILE, 'r') as jsonfile:
     data = json.load(jsonfile)
 
 get_keep_info(data, NOTE_PATH)
-fill_metadata(data, RESULT_FILE)
 
 with open(RESULT_FILE, 'w') as jsonfile:
     json.dump(data, jsonfile, indent=4)
 
+fill_metadata(data, RESULT_FILE)
+
 df = pd.DataFrame(data)
 
-excel_writer = pd.ExcelWriter('Test/test.xlsx')
+excel_writer = pd.ExcelWriter(EXCEL_FILE)
 df.to_excel(excel_writer, index=False)
 excel_writer.close()
 print('\nSUCESSFULLY EXPORTED MUSIC DATA TO EXCEL!\n')
