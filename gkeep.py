@@ -7,7 +7,7 @@ import auth
 email = auth.email
 master_token = auth.master_token
 note_id = auth.note_id # album list note
-
+test_id = auth.test_id
 
 # connect to google keep account
 def connect(mail=email, token=master_token):
@@ -18,7 +18,7 @@ def connect(mail=email, token=master_token):
 
 
 # get data from gkeep note    
-def note_data(note_id=note_id):
+def note_data(note_id):
     
     keep = connect()
 
@@ -30,12 +30,12 @@ def note_data(note_id=note_id):
 
 
 # update local text file with gkeep note data
-def update_local_txt(file_path, note_id=note_id):
+def update_local_txt(file_path, note_id):
     
-    gkeep_data = note_data()
+    gkeep_data = note_data(note_id).split('\n')
     
     with open(file_path, 'w', encoding='utf-8') as textfile:
-        textfile.write(gkeep_data)
+        textfile.write('\n'.join(entry for entry in gkeep_data if entry))
     
     print('Local Txt updated from Keep Note')
 
@@ -59,13 +59,37 @@ def update_keep_note(file_path, note_id=note_id):
    
 if __name__ == '__main__':
     
-    mode = input('Test mode: ')
+    mode = input('Test mode (data/ukeep/ulocal): ')
     
     if mode == 'data':
-        print(note_data(note_id))
+        keepnote = input('View real/test note data:')
+        
+        if keepnote == 'real':
+            print(note_data(note_id))
+        elif keepnote == 'test':
+            print(note_data(test_id))
+        else:
+            print('Error: Wrong note selected...)')
             
     elif mode == 'ukeep':
-        update_keep_note('test.txt', note_id)
+        keepnote = input('Note to update (real/test): ')
+        
+        if keepnote == 'real':
+            update_keep_note('album_list.txt', note_id)
+        elif keepnote == 'test':
+            update_keep_note('Test/test.txt', test_id)
+        else:
+            print('Error updating keep note...')
         
     elif mode == 'ulocal':
-        update_local_txt('test.txt', note_id)
+        keepnote = input('Local txt to update (real/test): ')
+        
+        if keepnote == 'real':
+            update_local_txt('album_list.txt', note_id)
+        elif keepnote == 'test':
+            update_local_txt('Test/test.txt', test_id)
+        else:
+            print('Error updating local txt')
+    
+    else:
+        print('Wrong Mode Selected...')
