@@ -75,7 +75,7 @@ if __name__ == '__main__':
         keepnote = input('Note to update (real/test): ')
         
         if keepnote == 'real':
-            update_keep_note('album_list.txt', note_id)
+            update_keep_note('Music Data/album_list.txt', note_id)
         elif keepnote == 'test':
             update_keep_note('Test/test.txt', test_id)
         else:
@@ -85,7 +85,7 @@ if __name__ == '__main__':
         keepnote = input('Local txt to update (real/test): ')
         
         if keepnote == 'real':
-            update_local_txt('album_list.txt', note_id)
+            update_local_txt('Music Data/album_list.txt', note_id)
         elif keepnote == 'test':
             update_local_txt('Test/test.txt', test_id)
         else:

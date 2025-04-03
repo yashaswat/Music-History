@@ -182,9 +182,9 @@ def fill_metadata(data, result_file):
     driver.quit()
 
 
-NOTE_PATH = 'album_list.txt'
-RESULT_FILE = 'data.json'
-EXCEL_FILE = 'my_music_history.xlsx'
+NOTE_PATH = 'Music Data/album_list.txt'
+RESULT_FILE = 'Music Data/data.json'
+EXCEL_FILE = 'Music Data/my_music_history.xlsx'
 
 gkeep.update_local_txt(NOTE_PATH, gkeep.note_id)
 
