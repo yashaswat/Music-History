@@ -4,10 +4,10 @@ import gkeepapi
 import auth
 
 # login info
-email = auth.email
-master_token = auth.master_token
-note_id = auth.note_id # album list note
-test_id = auth.test_id
+email = os.getenv('GKEEP_EMAIL')
+master_token = os.getenv('GKEEP_MASTER_TOKEN')
+note_id = os.getenv('GKEEP_NOTE_ID') # album list note
+test_id = os.getenv('GKEEP_TEST_ID')
 
 # connect to google keep account
 def connect(mail=email, token=master_token):
