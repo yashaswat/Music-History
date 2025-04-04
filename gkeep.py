@@ -1,7 +1,7 @@
 import os
 import gpsoauth
 import gkeepapi
-import auth
+import Test.auth as auth
 
 # login info
 email = os.getenv('GKEEP_EMAIL')
